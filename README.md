@@ -7,7 +7,7 @@ It runs entirely in your web browser on Mac or Windows. There is nothing to inst
 ## How to use it
 
 1. Download this repository: green **Code** button → **Download ZIP**, then unzip it.
-2. Open `index.html` in Chrome, Edge, Safari or Firefox (double-click it).
+2. Open `index.html` in Chrome, Edge, Safari or Firefox (double-click it). On Windows, unzip first rather than opening it from inside the ZIP.
 3. Choose a course file. To get one, open the course in Garmin Connect, click the gear icon and choose **Export GPX** (or TCX).
 4. Set the pace, start time and device, then click **Create FIT file**. In Chrome or Edge a Save window opens so you can choose the folder and file name. Safari and Firefox save to your Downloads folder instead, unless you turn on "Ask where to save" in the browser's download settings.
 5. In Garmin Connect on the web, click the cloud icon → **Import Data** and choose the new `.fit` file.
@@ -47,5 +47,4 @@ Whether a connected app picks up a manually imported activity depends on Garmin 
 
 ## Files
 
-- `index.html` – the app.
-- `coursetofit.js` – course parsing and the FIT encoder (no dependencies; also works in Node).
+- `index.html` – the whole app in one file: the page, course parsing and the FIT encoder. You can copy this single file anywhere and open it.
