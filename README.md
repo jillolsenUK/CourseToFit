@@ -16,7 +16,7 @@ It runs entirely in your web browser on Mac or Windows. There is nothing to inst
 
 - One GPS point per second along the course, at a constant pace, with the course's elevation.
 - Sport set to **running**, and the device set to the fēnix 8 model you choose (or the serial number you enter).
-- Optional synthetic heart rate (drifting gently between the start and finish values) and cadence.
+- Cadence (on by default) and, only if you tick **Include heart rate**, synthetic heart rate drifting gently between the start and finish values. Heart rate is **off by default**, so files don't contain it unless you ask for it.
 - Lap, session and activity summaries: distance, time, ascent and descent.
 
 ## Effect on your Garmin metrics
@@ -34,7 +34,7 @@ An imported activity is treated like a real run. Deleting it afterwards fixes so
 
 ## How to prevent it
 
-1. **Turn heart rate off in the app.** This is the most important step. Without heart rate the run adds little or nothing to Training Load and can't change VO2 max, so there is very little to undo.
+1. **Leave heart rate off.** It is unticked by default; only tick **Include heart rate** if you really need it. This is the most important step. Without heart rate the run adds little or nothing to Training Load and can't change VO2 max, so there is very little to undo.
 2. **Use an easy pace.** The default (6:30/km) won't set records. Don't go faster than you really run.
 3. **Disconnect Strava before importing.** There is no pause button: in Garmin Connect go to **Settings → Connected Apps → Strava → Disconnect** (or in Strava, **Settings → My Apps → Garmin → Revoke Access**). Import the file, then reconnect. Garmin only sends activities recorded after you reconnect, so the import won't be sent later. Any real run you record while disconnected won't reach Strava automatically either, so do this in one go.
 4. **Make it private.** A FIT file can't set privacy. Garmin applies your account default, so set **Account Settings → Privacy → Activities** to **Only Me** before importing if you want it hidden, and switch it back afterwards.

@@ -96,7 +96,10 @@
         <label for="serial">Watch serial number (optional)</label>
         <input type="text" id="serial" inputmode="numeric" placeholder="Leave blank for a placeholder">
       </div>
-      <div class="full"><label class="check"><input type="checkbox" id="hrOn" checked> Include heart rate</label></div>
+      <div class="full">
+        <label class="check"><input type="checkbox" id="hrOn"> Include heart rate</label>
+        <p class="note" style="margin:4px 0 0 24px">Off by default. Synthetic heart rate counts toward Garmin Training Load, recovery time and VO2 max.</p>
+      </div>
       <div id="hrBox" class="full grid" style="gap:14px 18px">
         <div><label for="hrStart">Starting HR (bpm)</label><input type="number" id="hrStart" value="138" min="60" max="210"></div>
         <div><label for="hrEnd">Finishing HR (bpm)</label><input type="number" id="hrEnd" value="150" min="60" max="210"></div>
@@ -116,7 +119,7 @@
     <ol class="note">
       <li>In Garmin Connect on the web, click the cloud icon, then <b>Import Data</b>, and choose the .fit file.</li>
       <li>Check it shows as a <b>Run</b>. Make it private, or pause Strava sync first, if you don't want it shared.</li>
-      <li>Synthetic heart rate counts toward Training Load and recovery. Turn it off above, or delete the activity once you've used it.</li>
+      <li>If you turned heart rate on, it counts toward Training Load and recovery. Delete the activity once you've used it.</li>
     </ol>
   </section>
 </main>
