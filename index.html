@@ -25,8 +25,8 @@
   .drop strong { display: block; font-size: 16px; margin-bottom: 4px; }
   .drop span { color: var(--muted); font-size: 13px; }
   input[type=file] { display: none; }
-  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; }
-  .stat { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+  .stat { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; min-width: 0; }
   .stat b { display: block; font-size: 18px; font-variant-numeric: tabular-nums; }
   .stat small { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
   svg.profile { width: 100%; height: 110px; display: block; margin-top: 14px; }
@@ -48,7 +48,27 @@
   .note { color: var(--muted); font-size: 13px; }
   ol.note { padding-left: 18px; margin: 0; }
   .hidden { display: none; }
-  @media (max-width: 560px) { .stats { grid-template-columns: 1fr 1fr; } .grid { grid-template-columns: 1fr; } }
+  .profwrap { position: relative; margin-top: 14px; touch-action: none; user-select: none; }
+  .profwrap svg.profile { margin-top: 0; }
+  .handle { position: absolute; top: 0; bottom: 0; width: 22px; margin-left: -11px; cursor: ew-resize; }
+  .handle::before { content: ""; position: absolute; left: 10px; top: 0; bottom: 0; width: 2px; background: var(--ink); opacity: .75; }
+  .handle span { position: absolute; left: 50%; top: -2px; transform: translateX(-50%); background: var(--ink); color: var(--card);
+    font-size: 11px; font-weight: 600; line-height: 1; padding: 3px 5px; border-radius: 5px; white-space: nowrap; }
+  .handle:hover::before, .handle.drag::before { opacity: 1; width: 3px; }
+  .split { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 14px; }
+  .splitrow { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: end; }
+  button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); font-size: 14px; padding: 10px 12px; width: auto; white-space: nowrap; }
+  button.ghost:disabled { opacity: .4; }
+  .slider { display: grid; grid-template-columns: 64px 1fr 92px; gap: 10px; align-items: center; margin-top: 10px; font-size: 13px; }
+  .slider b { font-weight: 600; } .slider output { text-align: right; font-variant-numeric: tabular-nums; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  .tablewrap { overflow-x: auto; margin-top: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { color: var(--muted); font-weight: 500; }
+  td .sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  @media (max-width: 560px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .grid { grid-template-columns: 1fr; }
+    .splitrow { grid-template-columns: 1fr 1fr; } .slider { grid-template-columns: 54px 1fr 80px; } }
 </style>
 </head>
 <body>
@@ -69,7 +89,36 @@
         <div class="stat"><small>Gain / loss</small><b id="sElev">–</b></div>
         <div class="stat"><small>Finish time</small><b id="sTime">–</b></div>
       </div>
-      <svg class="profile" id="profile" viewBox="0 0 700 110" preserveAspectRatio="none" aria-label="Elevation profile"></svg>
+      <div class="profwrap" id="profwrap">
+        <svg class="profile" id="profile" viewBox="0 0 700 110" preserveAspectRatio="none" aria-label="Elevation profile"></svg>
+        <div id="handles"></div>
+      </div>
+      <div class="split">
+        <div class="splitrow">
+          <div>
+            <label for="segN">Split into segments</label>
+            <input type="number" id="segN" value="1" min="1" max="20">
+          </div>
+          <div>
+            <label for="segGap">Segment start times</label>
+            <select id="segGap">
+              <option value="day">One day apart</option>
+              <option value="back">Back to back</option>
+            </select>
+          </div>
+          <div>
+            <label for="fmt">Save as</label>
+            <select id="fmt">
+              <option value="fit">FIT activities</option>
+              <option value="gpx">GPX courses</option>
+            </select>
+          </div>
+          <div class="evenbox"><button type="button" class="ghost" id="segEven">Space evenly</button></div>
+        </div>
+        <p class="note" id="splitHint" style="margin:8px 0 0">Choose how many parts you want. The split points start evenly spaced; drag the lines on the elevation profile or use the sliders to move them.</p>
+        <div id="segSliders"></div>
+        <div class="tablewrap"><table id="segTable"></table></div>
+      </div>
     </div>
     <div class="msg" id="loadMsg"></div>
   </section>
@@ -238,7 +287,7 @@
   function buildSamples(points, opts) {
     const st = courseStats(points);
     const speed = 1000 / opts.paceSecPerKm; // m/s
-    const n = Math.floor(st.distance / speed);
+    const n = Math.ceil(st.distance / speed); // last point lands exactly on the finish
     const rand = rng(opts.seed || 7);
     const hrStart = opts.hrStart, hrEnd = opts.hrEnd;
     let hr = Math.min(100, hrStart);
@@ -397,10 +446,44 @@
     return { bytes: w.toBytes(), duration, distance: totalDist, ascent: asc, descent: desc, stats };
   }
 
+  // Cut the part of a course between two distances (metres along the course),
+  // interpolating new end points so segments join exactly.
+  function sliceCourse(points, cum, d0, d1) {
+    const at = d => {
+      let j = 0;
+      while (j < cum.length - 2 && cum[j + 1] < d) j++;
+      const seg = cum[j + 1] - cum[j], f = seg ? Math.min(1, Math.max(0, (d - cum[j]) / seg)) : 0;
+      const a = points[j], b = points[j + 1];
+      return { lat: a.lat + f * (b.lat - a.lat), lon: a.lon + f * (b.lon - a.lon), ele: a.ele + f * (b.ele - a.ele) };
+    };
+    const out = [at(d0)];
+    for (let i = 0; i < points.length; i++) if (cum[i] > d0 && cum[i] < d1) out.push(points[i]);
+    out.push(at(d1));
+    return out;
+  }
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+  // A GPX course (track with elevation, no times) for a list of points.
+  function toGpx(name, points) {
+    const pts = points.map(p => `      <trkpt lat="${p.lat.toFixed(8)}" lon="${p.lon.toFixed(8)}"><ele>${p.ele.toFixed(2)}</ele></trkpt>`).join('\n');
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Course to FIT" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata><name>${esc(name)}</name></metadata>
+  <trk>
+    <name>${esc(name)}</name>
+    <trkseg>
+${pts}
+    </trkseg>
+  </trk>
+</gpx>
+`;
+  }
+
   // DOMParser in browsers; in Node, tests inject one.
   let DOMParserImpl = (typeof DOMParser !== 'undefined') ? DOMParser : null;
   const api = {
-    DEVICES, parseCourse, courseStats, courseToFit,
+    DEVICES, parseCourse, courseStats, courseToFit, sliceCourse, toGpx,
     setDOMParser(p) { DOMParserImpl = p; },
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
@@ -417,10 +500,17 @@
     const o = document.createElement('option'); o.value = key; o.textContent = d.label; $('device').appendChild(o);
   }
 
-  // Default start: yesterday 06:00 local (a 12-hour finish lands at about 18:00)
-  const y = new Date(); y.setDate(y.getDate() - 1); y.setHours(6, 0, 0, 0);
+  // Default start: 06:00, far enough back that every part is in the past
+  // (yesterday for one file; one day further back for each extra part a day apart).
   const pad = n => String(n).padStart(2, '0');
-  $('start').value = `${y.getFullYear()}-${pad(y.getMonth() + 1)}-${pad(y.getDate())}T06:00`;
+  let startEdited = false;
+  function defaultStart(parts) {
+    const days = $('segGap') && $('segGap').value === 'day' ? Math.max(1, parts) : 1;
+    const y = new Date(); y.setDate(y.getDate() - days); y.setHours(6, 0, 0, 0);
+    $('start').value = `${y.getFullYear()}-${pad(y.getMonth() + 1)}-${pad(y.getDate())}T06:00`;
+  }
+  defaultStart(1);
+  $('start').addEventListener('input', () => { startEdited = true; });
 
   // Unit default: miles for US locales
   if ((navigator.language || '').toLowerCase() === 'en-us') { $('unit').value = 'mi'; $('pace').value = '27:28'; }
@@ -436,18 +526,128 @@
 
   function msg(el, text, cls) { el.textContent = text; el.className = 'msg ' + (cls || ''); }
 
+  // ---------- Splitting ----------
+  const MIN_GAP = 100;      // metres; the shortest segment allowed
+  const MAX_SEGMENTS = 20;
+  let stats = null;         // course stats, computed once per course
+  let splits = [];          // split points, metres along the course
+  let futureWarn = false;
+
   function load(f) {
     baseName = f.name.replace(/\.[^.]+$/, '');
     f.text().then(text => {
       try {
         course = CourseToFit.parseCourse(text);
+        stats = CourseToFit.courseStats(course.points);
         msg($('loadMsg'), course.hasElevation ? '' : 'This course has no elevation data, so the activity will be flat.', course.hasElevation ? '' : 'warn');
         $('summary').classList.remove('hidden');
-        refresh();
+        setSegments(+$('segN').value || 1);
       } catch (err) {
-        course = null; $('summary').classList.add('hidden'); msg($('loadMsg'), err.message, 'err'); refresh();
+        course = null; stats = null; $('summary').classList.add('hidden'); msg($('loadMsg'), err.message, 'err'); refresh();
       }
     });
+  }
+
+  function setSegments(n) {
+    if (!stats) return;
+    const maxByLength = Math.max(1, Math.floor(stats.distance / MIN_GAP));
+    n = Math.max(1, Math.min(MAX_SEGMENTS, maxByLength, Math.round(n) || 1));
+    $('segN').value = n;
+    splits = [];
+    for (let i = 1; i < n; i++) splits.push(Math.round(stats.distance * i / n));
+    if (!startEdited) defaultStart(n);
+    buildSliders();
+    refresh();
+  }
+
+  function moveSplit(i, d) {
+    const lo = (i === 0 ? 0 : splits[i - 1]) + MIN_GAP;
+    const hi = (i === splits.length - 1 ? stats.distance : splits[i + 1]) - MIN_GAP;
+    splits[i] = Math.round(Math.min(hi, Math.max(lo, d)));
+    refresh();
+  }
+
+  function bounds() {
+    const b = [0, ...splits, stats.distance];
+    return b.slice(0, -1).map((d0, k) => [d0, b[k + 1]]);
+  }
+
+  const isMi = () => $('unit').value === 'mi';
+  const fmtDist = m => isMi() ? (m / 1609.344).toFixed(2) + ' mi' : (m / 1000).toFixed(2) + ' km';
+  const fmtElev = m => isMi() ? Math.round(m * 3.28084) + ' ft' : Math.round(m) + ' m';
+
+  function buildSliders() {
+    const box = $('segSliders');
+    box.innerHTML = '';
+    splits.forEach((d, i) => {
+      const row = document.createElement('div');
+      row.className = 'slider';
+      row.innerHTML = `<b>Split ${i + 1}</b><input type="range" min="0" step="10" aria-label="Split ${i + 1} position"><output></output>`;
+      const r = row.querySelector('input');
+      r.max = Math.round(stats.distance);
+      r.addEventListener('input', () => moveSplit(i, +r.value));
+      box.appendChild(row);
+    });
+    const h = $('handles');
+    h.innerHTML = '';
+    splits.forEach((d, i) => {
+      const el = document.createElement('div');
+      el.className = 'handle';
+      el.innerHTML = `<span>${i + 1}</span>`;
+      el.title = 'Drag to move split ' + (i + 1);
+      el.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        el.setPointerCapture(e.pointerId);
+        el.classList.add('drag');
+        const rect = $('profwrap').getBoundingClientRect();
+        const move = ev => moveSplit(i, ((ev.clientX - rect.left) / rect.width) * stats.distance);
+        const up = () => { el.classList.remove('drag'); el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up); };
+        el.addEventListener('pointermove', move);
+        el.addEventListener('pointerup', up);
+        el.addEventListener('pointercancel', up);
+      });
+      h.appendChild(el);
+    });
+  }
+
+  function segmentStart(k, durations) {
+    const base = new Date($('start').value);
+    if ($('segGap').value === 'day') { const s = new Date(base); s.setDate(s.getDate() + k); return s; }
+    let t = base.getTime();
+    for (let j = 0; j < k; j++) t += (durations[j] + 60) * 1000; // one minute between segments
+    return new Date(t);
+  }
+
+  function updateSplitUI(p) {
+    const n = splits.length + 1;
+    $('segEven').disabled = n === 1;
+    $('segGap').disabled = n === 1;
+    // sliders and handles
+    const rows = $('segSliders').children, hs = $('handles').children;
+    splits.forEach((d, i) => {
+      if (rows[i]) { rows[i].querySelector('input').value = d; rows[i].querySelector('output').textContent = fmtDist(d); }
+      if (hs[i]) hs[i].style.left = (d / stats.distance * 100) + '%';
+    });
+    // table
+    const segs = bounds();
+    const durations = segs.map(([a, b]) => p ? Math.floor((b - a) / (1000 / p)) : 0);
+    let html = '';
+    if (n > 1) {
+      html = '<tr><th>Part</th><th>From – to</th><th>Distance</th><th>Gain / loss</th><th>Time</th><th>Starts</th></tr>';
+      segs.forEach(([a, b], k) => {
+        const pts = CourseToFit.sliceCourse(course.points, stats.cum, a, b);
+        const s = CourseToFit.courseStats(pts);
+        const st = segmentStart(k, durations);
+        const when = isNaN(st) ? '–' : st.toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        html += `<tr><td>${k + 1} of ${n}</td><td>${fmtDist(a)} – ${fmtDist(b)}</td><td>${fmtDist(b - a)}</td><td>+${fmtElev(s.ascent)} / −${fmtElev(s.descent)}</td><td>${p ? fmtTime(durations[k]) : '–'}</td><td>${when}</td></tr>`;
+      });
+    }
+    $('segTable').innerHTML = html;
+    // warn if any part would finish in the future
+    const lastEnd = segmentStart(n - 1, durations).getTime() + (durations[n - 1] || 0) * 1000;
+    futureWarn = $('fmt').value === 'fit' && lastEnd > Date.now();
+    const word = $('fmt').value === 'fit' ? 'FIT' : 'GPX';
+    $('go').textContent = n === 1 ? `Create ${word} file` : `Create ${n} ${word} files`;
   }
 
   function paceSec() {
@@ -463,18 +663,21 @@
     $('hrBox').classList.toggle('hidden', !$('hrOn').checked);
     $('cadBox').classList.toggle('hidden', !$('cadOn').checked);
     const p = paceSec();
-    $('go').disabled = !course || !p || !$('start').value;
+    const needsActivity = $('fmt').value === 'fit';
+    $('go').disabled = !course || (needsActivity && (!p || !$('start').value));
     if (!course) return;
-    const st = CourseToFit.courseStats(course.points);
-    const mi = $('unit').value === 'mi';
+    const st = stats;
     $('sName').textContent = course.name || baseName;
     $('sName').title = course.name || baseName;
     $('sName').style.cssText = 'font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
-    $('sDist').textContent = mi ? (st.distance / 1609.344).toFixed(2) + ' mi' : (st.distance / 1000).toFixed(2) + ' km';
-    $('sElev').textContent = mi ? `+${Math.round(st.ascent * 3.28084)} / −${Math.round(st.descent * 3.28084)} ft` : `+${Math.round(st.ascent)} / −${Math.round(st.descent)} m`;
+    $('sDist').textContent = fmtDist(st.distance);
+    $('sElev').textContent = `+${fmtElev(st.ascent)} / −${fmtElev(st.descent)}`.replace(/ m \/ /, ' / ').replace(/ ft \/ /, ' / ');
     $('sTime').textContent = p ? fmtTime(st.distance / 1000 * p) : '–';
     drawProfile(st);
-    if (!p) msg($('outMsg'), 'Enter a pace as minutes:seconds, e.g. 17:04.', 'warn'); else msg($('outMsg'), '');
+    updateSplitUI(p);
+    if (!p && needsActivity) msg($('outMsg'), 'Enter a pace as minutes:seconds, e.g. 17:04.', 'warn');
+    else if (futureWarn) msg($('outMsg'), 'Some of these activities would finish in the future. Pick an earlier start date so Garmin accepts them.', 'warn');
+    else msg($('outMsg'), '');
   }
 
   function drawProfile(st) {
@@ -486,7 +689,14 @@
       const x = (st.cum[i] / st.distance) * W, yy = H - 6 - ((pts[i].ele - lo) / span) * (H - 16);
       d += (d ? 'L' : 'M') + x.toFixed(1) + ',' + yy.toFixed(1);
     }
-    $('profile').innerHTML = `<path d="${d}L${W},${H}L0,${H}Z" fill="var(--fill)"/><path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
+    const last = pts.length - 1, yl = H - 6 - ((pts[last].ele - lo) / span) * (H - 16);
+    d += `L${W},${yl.toFixed(1)}`;
+    // shade every other segment so the parts are easy to tell apart
+    let bands = '';
+    bounds().forEach(([a, b], k) => {
+      if (k % 2) bands += `<rect x="${(a / st.distance * W).toFixed(1)}" y="0" width="${((b - a) / st.distance * W).toFixed(1)}" height="${H}" fill="var(--ink)" fill-opacity=".06"/>`;
+    });
+    $('profile').innerHTML = `${bands}<path d="${d}L${W},${H}L0,${H}Z" fill="var(--fill)" fill-opacity=".85"/><path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
   }
 
   // Keep the same speed when switching units
@@ -501,51 +711,88 @@
     lastUnit = $('unit').value;
   });
 
-  ['pace', 'unit', 'start', 'hrOn', 'cadOn'].forEach(id => { $(id).addEventListener('input', refresh); $(id).addEventListener('change', refresh); });
+  $('segGap').addEventListener('change', () => { if (!startEdited) defaultStart(splits.length + 1); });
+  ['pace', 'unit', 'start', 'hrOn', 'cadOn', 'segGap', 'fmt'].forEach(id => { $(id).addEventListener('input', refresh); $(id).addEventListener('change', refresh); });
+  $('segN').addEventListener('change', () => setSegments(+$('segN').value));
+  $('segN').addEventListener('input', () => { const v = +$('segN').value; if (v >= 1 && v <= MAX_SEGMENTS) setSegments(v); });
+  $('segEven').addEventListener('click', () => setSegments(splits.length + 1));
+
+  // ---------- Saving ----------
+  function downloadBlob(bytes, name, type) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([bytes], { type }));
+    a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  }
 
   $('go').addEventListener('click', async () => {
     try {
+      const fmt = $('fmt').value, isFit = fmt === 'fit';
       const serialRaw = $('serial').value.replace(/\D/g, '');
       const hrStart = +$('hrStart').value, hrEnd = +$('hrEnd').value;
-      if ($('hrOn').checked && !(hrStart >= 60 && hrStart <= 210 && hrEnd >= 60 && hrEnd <= 210)) throw new Error('Heart rate must be between 60 and 210 bpm.');
-      const fileName = baseName.replace(/[^\w\-]+/g, '_') + '_activity.fit';
+      if (isFit && $('hrOn').checked && !(hrStart >= 60 && hrStart <= 210 && hrEnd >= 60 && hrEnd <= 210)) throw new Error('Heart rate must be between 60 and 210 bpm.');
 
-      // Chrome and Edge: ask where to save. Open the dialog first, while the click still counts as a user action.
-      let handle = null;
-      if (window.showSaveFilePicker) {
-        try {
-          handle = await window.showSaveFilePicker({
-            suggestedName: fileName,
-            types: [{ description: 'FIT activity', accept: { 'application/octet-stream': ['.fit'] } }],
+      const segs = bounds(), n = segs.length;
+      const safe = baseName.replace(/[^\w\-]+/g, '_');
+      const ext = isFit ? 'fit' : 'gpx';
+      const type = isFit ? 'application/octet-stream' : 'application/gpx+xml';
+      const names = segs.map((_, k) => (n === 1 ? safe : `${safe}_part${k + 1}of${n}`) + (isFit ? '_activity' : '') + '.' + ext);
+
+      // Chrome and Edge: ask where to save first, while the click still counts as a user action.
+      let fileHandle = null, dirHandle = null;
+      try {
+        if (n === 1 && window.showSaveFilePicker) {
+          fileHandle = await window.showSaveFilePicker({ suggestedName: names[0],
+            types: [{ description: isFit ? 'FIT activity' : 'GPX course', accept: { [type]: ['.' + ext] } }] });
+        } else if (n > 1 && window.showDirectoryPicker) {
+          dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+        }
+      } catch (err) {
+        if (err.name === 'AbortError') { msg($('outMsg'), 'Save cancelled.', ''); return; }
+        fileHandle = dirHandle = null; // not allowed here; fall back to downloads
+      }
+
+      // Build the files
+      const files = [];
+      const durations = [];
+      const now = Date.now();
+      for (let k = 0; k < n; k++) {
+        const [a, b] = segs[k];
+        const pts = n === 1 ? course.points : CourseToFit.sliceCourse(course.points, stats.cum, a, b);
+        if (isFit) {
+          const res = CourseToFit.courseToFit({ points: pts }, {
+            paceSecPerKm: paceSec(), start: segmentStart(k, durations), device: $('device').value,
+            serial: serialRaw ? Math.min(+serialRaw, 4294967294) : null,
+            includeHr: $('hrOn').checked, hrStart, hrEnd,
+            includeCadence: $('cadOn').checked, cadence: +$('cad').value || 105,
+            created: new Date(now + k * 1000), // a different file ID for every part
           });
-        } catch (err) {
-          if (err.name === 'AbortError') { msg($('outMsg'), 'Save cancelled.', ''); return; }
-          handle = null; // picker not allowed here; fall back to a normal download
+          durations.push(res.duration);
+          files.push({ name: names[k], bytes: res.bytes, dist: res.distance, time: res.duration });
+        } else {
+          const title = (course.name || baseName) + (n === 1 ? '' : ` – part ${k + 1} of ${n}`);
+          files.push({ name: names[k], bytes: new TextEncoder().encode(CourseToFit.toGpx(title, pts)), dist: b - a });
         }
       }
 
-      const res = CourseToFit.courseToFit(course, {
-        paceSecPerKm: paceSec(), start: new Date($('start').value), device: $('device').value,
-        serial: serialRaw ? Math.min(+serialRaw, 4294967294) : null,
-        includeHr: $('hrOn').checked, hrStart, hrEnd,
-        includeCadence: $('cadOn').checked, cadence: +$('cad').value || 105,
-      });
-      const summary = `${(res.distance / 1000).toFixed(2)} km in ${fmtTime(res.duration)}`;
-
-      if (handle) {
-        const w = await handle.createWritable();
-        await w.write(res.bytes);
-        await w.close();
-        msg($('outMsg'), `Saved ${handle.name}: ${summary}.`, 'ok');
+      const what = n === 1 ? names[0] : `${n} files`;
+      const detail = n === 1 && isFit ? `: ${(files[0].dist / 1000).toFixed(2)} km in ${fmtTime(files[0].time)}` : '';
+      if (fileHandle) {
+        const w = await fileHandle.createWritable(); await w.write(files[0].bytes); await w.close();
+        msg($('outMsg'), `Saved ${fileHandle.name}${detail}.`, 'ok');
+      } else if (dirHandle) {
+        for (const f of files) {
+          const h = await dirHandle.getFileHandle(f.name, { create: true });
+          const w = await h.createWritable(); await w.write(f.bytes); await w.close();
+        }
+        msg($('outMsg'), `Saved ${what} to the "${dirHandle.name}" folder.`, 'ok');
       } else {
-        // Safari and Firefox: browser download (saves to Downloads unless the browser is set to ask)
-        const blob = new Blob([res.bytes], { type: 'application/octet-stream' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = fileName;
-        document.body.appendChild(a); a.click(); a.remove();
-        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-        msg($('outMsg'), `Downloaded ${fileName}: ${summary}. To choose the folder each time, turn on "Ask where to save" in your browser's download settings.`, 'ok');
+        for (let k = 0; k < files.length; k++) {
+          downloadBlob(files[k].bytes, files[k].name, type);
+          if (k < files.length - 1) await new Promise(r => setTimeout(r, 400));
+        }
+        msg($('outMsg'), `Downloaded ${what}${detail}.` + (n > 1 ? ' If your browser asks whether to allow multiple downloads, choose Allow.' : ' To choose the folder each time, turn on "Ask where to save" in your browser\'s download settings.'), 'ok');
       }
     } catch (err) { msg($('outMsg'), err.message, 'err'); }
   });

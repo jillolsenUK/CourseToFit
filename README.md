@@ -21,6 +21,19 @@ Please see the notes as to how will/may affect your metrics.
 
 5. Import the file into Garmin Connect on the web (see below).
 
+## Splitting a course into segments
+
+You can break a long course into several shorter ones, for example a marathon into four parts.
+
+1. Load the course, then set **Split into segments** to the number of parts you want. The split points start evenly spaced and show as numbered lines on the elevation profile.
+2. Move a split point by dragging its line on the profile, or with its slider underneath. Each part is always at least 100 m long, and split points can't pass each other. **Space evenly** puts them back to equal lengths.
+3. Check the table: it shows each part's distance, climbing, time at your pace and start time.
+4. Choose **Segment start times**: **One day apart** (part 1 on the start date, part 2 the next day, and so on) or **Back to back** (each part starts a minute after the previous one finishes).
+5. Choose **Save as**: **FIT activities** to import into Garmin Connect, or **GPX courses** if you just want the course cut into pieces.
+6. Click **Create … files**. In Chrome or Edge you pick a folder and all the parts are saved into it. Safari and Firefox download them one after another; allow multiple downloads if asked.
+
+Files are named like `Boston_part1of4_activity.fit`. Each part gets its own file ID, so Garmin won't reject later parts as duplicates. When parts are one day apart, the start date defaults far enough back that every part is in the past; if you choose a start that would put any part in the future, the page warns you.
+
 ## Importing into Garmin Connect
 
 1. Go to **Activities** in Garmin Connect on the web and click **Import** at the top right.
@@ -65,7 +78,7 @@ An imported activity is treated like a real run. Deleting it afterwards fixes so
 2. **Use a slow pace.** The default is 17:04/km (27:28/mile), which is a 12-hour marathon, with a matching walking cadence of 105 steps per minute. That pace won't set records or count as a hard effort. Change it on the page if you want something else.
 3. **Disconnect Strava before importing.** There is no pause button: in Garmin Connect go to **Settings → Connected Apps → Strava → Disconnect** (or in Strava, **Settings → My Apps → Garmin → Revoke Access**). Import the file, then reconnect. Garmin only sends activities recorded after you reconnect, so the import won't be sent later. Any real run you record while disconnected won't reach Strava automatically either, so do this in one go.
 4. **Make it private.** A FIT file can't set privacy. Garmin applies your account default, so set **Account Settings → Privacy → Activities** to **Only Me** before importing if you want it hidden, and switch it back afterwards.
-5. **Pick a past start time that doesn't overlap a real activity.** The default is yesterday at 06:00, so a 12-hour marathon finishes at about 18:00. Longer courses or slower paces finish later, so check the finish time shown on the page.
+5. **Pick a past start time that doesn't overlap a real activity.** The default is yesterday at 06:00 (or further back when you split a course into parts a day apart), so a 12-hour marathon finishes at about 18:00. Longer courses or slower paces finish later, so check the finish time shown on the page.
 6. **Don't sync your watch until you've finished.** Import, let the app you're using pick up the run and check it's there, then delete the activity in Garmin before your watch next syncs. That gives the watch the least chance to take the activity's load.
 7. **Remember** to **delete** the activity from Strava or TrainingPeaks or any other connected app as it will change metrics.
 
