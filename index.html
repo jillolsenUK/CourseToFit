@@ -80,7 +80,7 @@
       <div>
         <label for="pace">Pace</label>
         <div class="row">
-          <input type="text" id="pace" value="6:30" inputmode="numeric" placeholder="mm:ss">
+          <input type="text" id="pace" value="17:04" inputmode="numeric" placeholder="mm:ss">
           <select id="unit"><option value="km">per km</option><option value="mi">per mile</option></select>
         </div>
       </div>
@@ -105,7 +105,7 @@
         <div><label for="hrEnd">Finishing HR (bpm)</label><input type="number" id="hrEnd" value="150" min="60" max="210"></div>
       </div>
       <div class="full"><label class="check"><input type="checkbox" id="cadOn" checked> Include cadence</label></div>
-      <div id="cadBox"><label for="cad">Cadence (steps per minute)</label><input type="number" id="cad" value="162" min="100" max="220"></div>
+      <div id="cadBox"><label for="cad">Cadence (steps per minute)</label><input type="number" id="cad" value="105" min="60" max="220"></div>
     </div>
   </section>
 
@@ -135,13 +135,13 @@
     const o = document.createElement('option'); o.value = key; o.textContent = d.label; $('device').appendChild(o);
   }
 
-  // Default start: yesterday 09:00 local
-  const y = new Date(); y.setDate(y.getDate() - 1); y.setHours(9, 0, 0, 0);
+  // Default start: yesterday 06:00 local (a 12-hour finish lands at about 18:00)
+  const y = new Date(); y.setDate(y.getDate() - 1); y.setHours(6, 0, 0, 0);
   const pad = n => String(n).padStart(2, '0');
-  $('start').value = `${y.getFullYear()}-${pad(y.getMonth() + 1)}-${pad(y.getDate())}T09:00`;
+  $('start').value = `${y.getFullYear()}-${pad(y.getMonth() + 1)}-${pad(y.getDate())}T06:00`;
 
   // Unit default: miles for US locales
-  if ((navigator.language || '').toLowerCase() === 'en-us') { $('unit').value = 'mi'; $('pace').value = '10:30'; }
+  if ((navigator.language || '').toLowerCase() === 'en-us') { $('unit').value = 'mi'; $('pace').value = '27:28'; }
 
   // File loading
   const drop = $('drop'), file = $('file');
@@ -172,7 +172,7 @@
     const m = $('pace').value.trim().match(/^(\d{1,2})(?::(\d{1,2}))?$/);
     if (!m) return null;
     const s = parseInt(m[1], 10) * 60 + parseInt(m[2] || '0', 10);
-    if (s < 120 || s > 1800) return null;
+    if (s < 120 || s > 3600) return null;
     return $('unit').value === 'mi' ? s / 1.609344 : s;
   }
   const fmtTime = s => { s = Math.round(s); return `${Math.floor(s / 3600)}:${pad(Math.floor(s / 60) % 60)}:${pad(s % 60)}`; };
@@ -192,7 +192,7 @@
     $('sElev').textContent = mi ? `+${Math.round(st.ascent * 3.28084)} / −${Math.round(st.descent * 3.28084)} ft` : `+${Math.round(st.ascent)} / −${Math.round(st.descent)} m`;
     $('sTime').textContent = p ? fmtTime(st.distance / 1000 * p) : '–';
     drawProfile(st);
-    if (!p) msg($('outMsg'), 'Enter a pace as minutes:seconds, e.g. 6:30.', 'warn'); else msg($('outMsg'), '');
+    if (!p) msg($('outMsg'), 'Enter a pace as minutes:seconds, e.g. 17:04.', 'warn'); else msg($('outMsg'), '');
   }
 
   function drawProfile(st) {
@@ -246,7 +246,7 @@
         paceSecPerKm: paceSec(), start: new Date($('start').value), device: $('device').value,
         serial: serialRaw ? Math.min(+serialRaw, 4294967294) : null,
         includeHr: $('hrOn').checked, hrStart, hrEnd,
-        includeCadence: $('cadOn').checked, cadence: +$('cad').value || 162,
+        includeCadence: $('cadOn').checked, cadence: +$('cad').value || 105,
       });
       const summary = `${(res.distance / 1000).toFixed(2)} km in ${fmtTime(res.duration)}`;
 

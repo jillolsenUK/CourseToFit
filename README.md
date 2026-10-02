@@ -35,10 +35,10 @@ An imported activity is treated like a real run. Deleting it afterwards fixes so
 ## How to prevent it
 
 1. **Leave heart rate off.** It is unticked by default; only tick **Include heart rate** if you really need it. This is the most important step. Without heart rate the run adds little or nothing to Training Load and can't change VO2 max, so there is very little to undo.
-2. **Use an easy pace.** The default (6:30/km) won't set records. Don't go faster than you really run.
+2. **Use a slow pace.** The default is 17:04/km (27:28/mile), which is a 12-hour marathon, with a matching walking cadence of 105 steps per minute. That pace won't set records or count as a hard effort. Change it on the page if you want something else.
 3. **Disconnect Strava before importing.** There is no pause button: in Garmin Connect go to **Settings → Connected Apps → Strava → Disconnect** (or in Strava, **Settings → My Apps → Garmin → Revoke Access**). Import the file, then reconnect. Garmin only sends activities recorded after you reconnect, so the import won't be sent later. Any real run you record while disconnected won't reach Strava automatically either, so do this in one go.
 4. **Make it private.** A FIT file can't set privacy. Garmin applies your account default, so set **Account Settings → Privacy → Activities** to **Only Me** before importing if you want it hidden, and switch it back afterwards.
-5. **Pick a past start time that doesn't overlap a real activity.** The default is yesterday at 09:00.
+5. **Pick a past start time that doesn't overlap a real activity.** The default is yesterday at 06:00, so a 12-hour marathon finishes at about 18:00. Longer courses or slower paces finish later, so check the finish time shown on the page.
 6. **Don't sync your watch until you've finished.** Import, let the app you're using pick up the run and check it's there, then delete the activity in Garmin before your watch next syncs. That gives the watch the least chance to take the activity's load.
 
 ## Connected apps
