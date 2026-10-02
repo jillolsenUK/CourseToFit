@@ -354,7 +354,10 @@
     const serial = opts.serial || 3412789650;
     const w = new FitWriter();
 
-    w.write('file_id', { type: 4, manufacturer: 1, product: dev.id, serial_number: serial, time_created: t0 });
+    // Garmin Connect rejects a file as "already uploaded" when its serial number and
+    // time_created match an earlier file, so stamp each file with the moment it was made.
+    const created = Math.max(fitTime(opts.created || new Date()), t1);
+    w.write('file_id', { type: 4, manufacturer: 1, product: dev.id, serial_number: serial, time_created: created });
     w.write('device_info', { timestamp: t0, device_index: 0, manufacturer: 1, serial_number: serial, product: dev.id });
     w.write('event', { timestamp: t0, event: 0, event_type: 0 }); // timer start
 

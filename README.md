@@ -69,6 +69,10 @@ An imported activity is treated like a real run. Deleting it afterwards fixes so
 6. **Don't sync your watch until you've finished.** Import, let the app you're using pick up the run and check it's there, then delete the activity in Garmin before your watch next syncs. That gives the watch the least chance to take the activity's load.
 7. **Remember** to **delete** the activity from Strava or TrainingPeaks or any other connected app as it will change metrics.
 
+## Troubleshooting
+
+**"This file has already been uploaded"**: Garmin treats two files as the same if their device serial number and creation time match. Files made with older versions of this page used the activity's start time as the creation time, so two courses created with the same start time clashed. Download the latest version and create the file again; each file is now stamped with the moment it was made. Different courses should also use different start times so the activities don't overlap.
+
 ## Connected apps
 
 Whether a connected app picks up a manually imported activity depends on Garmin passing it on. If the activity never appears in that app's history, the file is not the problem.
