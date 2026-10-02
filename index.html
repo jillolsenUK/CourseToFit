@@ -218,24 +218,50 @@
 
   ['pace', 'unit', 'start', 'hrOn', 'cadOn'].forEach(id => { $(id).addEventListener('input', refresh); $(id).addEventListener('change', refresh); });
 
-  $('go').addEventListener('click', () => {
+  $('go').addEventListener('click', async () => {
     try {
       const serialRaw = $('serial').value.replace(/\D/g, '');
       const hrStart = +$('hrStart').value, hrEnd = +$('hrEnd').value;
       if ($('hrOn').checked && !(hrStart >= 60 && hrStart <= 210 && hrEnd >= 60 && hrEnd <= 210)) throw new Error('Heart rate must be between 60 and 210 bpm.');
+      const fileName = baseName.replace(/[^\w\-]+/g, '_') + '_activity.fit';
+
+      // Chrome and Edge: ask where to save. Open the dialog first, while the click still counts as a user action.
+      let handle = null;
+      if (window.showSaveFilePicker) {
+        try {
+          handle = await window.showSaveFilePicker({
+            suggestedName: fileName,
+            types: [{ description: 'FIT activity', accept: { 'application/octet-stream': ['.fit'] } }],
+          });
+        } catch (err) {
+          if (err.name === 'AbortError') { msg($('outMsg'), 'Save cancelled.', ''); return; }
+          handle = null; // picker not allowed here; fall back to a normal download
+        }
+      }
+
       const res = CourseToFit.courseToFit(course, {
         paceSecPerKm: paceSec(), start: new Date($('start').value), device: $('device').value,
         serial: serialRaw ? Math.min(+serialRaw, 4294967294) : null,
         includeHr: $('hrOn').checked, hrStart, hrEnd,
         includeCadence: $('cadOn').checked, cadence: +$('cad').value || 162,
       });
-      const blob = new Blob([res.bytes], { type: 'application/octet-stream' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = baseName.replace(/[^\w\-]+/g, '_') + '_activity.fit';
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-      msg($('outMsg'), `Saved ${a.download}: ${(res.distance / 1000).toFixed(2)} km in ${fmtTime(res.duration)}.`, 'ok');
+      const summary = `${(res.distance / 1000).toFixed(2)} km in ${fmtTime(res.duration)}`;
+
+      if (handle) {
+        const w = await handle.createWritable();
+        await w.write(res.bytes);
+        await w.close();
+        msg($('outMsg'), `Saved ${handle.name}: ${summary}.`, 'ok');
+      } else {
+        // Safari and Firefox: browser download (saves to Downloads unless the browser is set to ask)
+        const blob = new Blob([res.bytes], { type: 'application/octet-stream' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = fileName;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        msg($('outMsg'), `Downloaded ${fileName}: ${summary}. To choose the folder each time, turn on "Ask where to save" in your browser's download settings.`, 'ok');
+      }
     } catch (err) { msg($('outMsg'), err.message, 'err'); }
   });
 
