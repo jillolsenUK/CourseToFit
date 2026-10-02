@@ -19,12 +19,31 @@ It runs entirely in your web browser on Mac or Windows. There is nothing to inst
 - Optional synthetic heart rate (drifting gently between the start and finish values) and cadence.
 - Lap, session and activity summaries: distance, time, ascent and descent.
 
-## Things to know
+## Effect on your Garmin metrics
 
-- **Training stats:** Garmin will count the activity toward mileage. If heart rate is included, it also feeds Training Load and recovery time. Turn heart rate off, or delete the activity after you've used it.
-- **Sharing:** Pause Strava auto-sync or make the activity private if you don't want it to appear in feeds.
-- **Start time:** Pick a time that doesn't overlap a real activity.
-- **Connected apps:** Whether a connected app picks up a manually imported activity depends on Garmin passing it on. If the activity never appears in that app's history, the file is not the problem.
+An imported activity is treated like a real run. Deleting it afterwards fixes some things straight away, but not everything.
+
+| Metric | Affected? | Does deleting the activity fix it? |
+|---|---|---|
+| Weekly / monthly distance and totals in Garmin Connect | Yes | Yes, straight away |
+| Training Load, Training Status, recovery time | Yes, if heart rate is included and your watch syncs after the import | Not always. The watch may keep the load, which then ages out over about 4 weeks (acute load ~7 days, chronic ~28 days) |
+| VO2 max estimate | Possibly, if heart rate is included | No. Your next real runs will correct it |
+| Personal records | Unlikely at an easy pace | Not always recalculated; remove a record manually if needed |
+| Strava | Yes, if auto-sync is on | No. Delete it in Strava as well |
+| Apps connected to Garmin | Yes, that's usually the point | Deleting in Garmin may also remove it from those apps |
+
+## How to prevent it
+
+1. **Turn heart rate off in the app.** This is the most important step. Without heart rate the run adds little or nothing to Training Load and can't change VO2 max, so there is very little to undo.
+2. **Use an easy pace.** The default (6:30/km) won't set records. Don't go faster than you really run.
+3. **Disconnect Strava before importing.** There is no pause button: in Garmin Connect go to **Settings → Connected Apps → Strava → Disconnect** (or in Strava, **Settings → My Apps → Garmin → Revoke Access**). Import the file, then reconnect. Garmin only sends activities recorded after you reconnect, so the import won't be sent later. Any real run you record while disconnected won't reach Strava automatically either, so do this in one go.
+4. **Make it private.** A FIT file can't set privacy. Garmin applies your account default, so set **Account Settings → Privacy → Activities** to **Only Me** before importing if you want it hidden, and switch it back afterwards.
+5. **Pick a past start time that doesn't overlap a real activity.** The default is yesterday at 09:00.
+6. **Don't sync your watch until you've finished.** Import, let the app you're using pick up the run and check it's there, then delete the activity in Garmin before your watch next syncs. That gives the watch the least chance to take the activity's load.
+
+## Connected apps
+
+Whether a connected app picks up a manually imported activity depends on Garmin passing it on. If the activity never appears in that app's history, the file is not the problem.
 
 ## Files
 
