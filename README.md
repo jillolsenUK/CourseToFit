@@ -2,7 +2,9 @@
 
 Turns a saved course (GPX or TCX, e.g. exported from Garmin Connect) into a FIT running activity that you can import into Garmin Connect. This lets you use a course with apps and services that only accept routes from recorded activities.
 
-It runs entirely in your web browser on Mac or Windows. There is nothing to install and nothing is uploaded anywhere.
+**It runs entirely in your web browser on Mac or Windows. There is nothing to install and nothing is uploaded anywhere.**
+
+Please see the notes as to how will/may affect your metrics.
 
 ## How to use it
 
@@ -59,6 +61,7 @@ An imported activity is treated like a real run. Deleting it afterwards fixes so
 4. **Make it private.** A FIT file can't set privacy. Garmin applies your account default, so set **Account Settings → Privacy → Activities** to **Only Me** before importing if you want it hidden, and switch it back afterwards.
 5. **Pick a past start time that doesn't overlap a real activity.** The default is yesterday at 06:00, so a 12-hour marathon finishes at about 18:00. Longer courses or slower paces finish later, so check the finish time shown on the page.
 6. **Don't sync your watch until you've finished.** Import, let the app you're using pick up the run and check it's there, then delete the activity in Garmin before your watch next syncs. That gives the watch the least chance to take the activity's load.
+7. **Remember** to **delete** the activity from Strava or TrainingPeaks or any other connected app as it will change metrics.
 
 ## Connected apps
 
