@@ -7,6 +7,10 @@ It runs entirely in your web browser on Mac or Windows. There is nothing to inst
 ## How to use it
 
 1. Download this repository: green **Code** button → **Download ZIP**, then unzip it.
+
+<img width="1392" height="696" alt="image" src="https://github.com/user-attachments/assets/9a391a6b-9ab0-479e-8e4f-94ea3e48c562" />
+
+
 2. Open `index.html` in Chrome, Edge, Safari or Firefox (double-click it). On Windows, unzip first rather than opening it from inside the ZIP.
 3. Choose a course file. To get one, open the course in Garmin Connect, click the gear icon and choose **Export GPX** (or TCX).
 4. Set the pace, start time and device, then click **Create FIT file**. In Chrome or Edge a Save window opens so you can choose the folder and file name. Safari and Firefox save to your Downloads folder instead, unless you turn on "Ask where to save" in the browser's download settings.
