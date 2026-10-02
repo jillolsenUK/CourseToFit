@@ -10,7 +10,22 @@ It runs entirely in your web browser on Mac or Windows. There is nothing to inst
 2. Open `index.html` in Chrome, Edge, Safari or Firefox (double-click it). On Windows, unzip first rather than opening it from inside the ZIP.
 3. Choose a course file. To get one, open the course in Garmin Connect, click the gear icon and choose **Export GPX** (or TCX).
 4. Set the pace, start time and device, then click **Create FIT file**. In Chrome or Edge a Save window opens so you can choose the folder and file name. Safari and Firefox save to your Downloads folder instead, unless you turn on "Ask where to save" in the browser's download settings.
-5. In Garmin Connect on the web, click the cloud icon → **Import Data** and choose the new `.fit` file.
+
+   ![The Course to FIT page with the Boston Marathon course loaded](docs/app.jpg)
+
+5. Import the file into Garmin Connect on the web (see below).
+
+## Importing into Garmin Connect
+
+1. Go to **Activities** in Garmin Connect on the web and click **Import** at the top right.
+
+   ![Garmin Connect Activities page with the Import link highlighted](docs/garmin-activities-import.jpg)
+
+2. Click **Browse** and choose the `.fit` file you created (or drag it onto the box), then click **Import Data**.
+
+   ![Garmin Connect Import Data page with Browse and Import Data highlighted](docs/garmin-import-data.jpg)
+
+3. Open the new activity and check it shows as a **Run**.
 
 ## What the file contains
 
