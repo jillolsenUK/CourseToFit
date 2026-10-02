@@ -33,6 +33,12 @@ Please see the notes as to how will/may affect your metrics.
 
 3. Open the new activity and check it shows as a **Run**.
 
+## Example
+
+The Boston Marathon course, converted with Course to FIT and imported into Garmin Connect, then picked up by a connected treadmill app as a route to run again: 42.4 km with 206 m of elevation gain.
+
+![The Boston Marathon course showing as a route in a connected treadmill app](docs/route-example.jpg)
+
 ## What the file contains
 
 - One GPS point per second along the course, at a constant pace, with the course's elevation.
