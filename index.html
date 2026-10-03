@@ -48,6 +48,11 @@
   .note { color: var(--muted); font-size: 13px; }
   ol.note { padding-left: 18px; margin: 0; }
   .hidden { display: none; }
+  .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .units { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--card); flex: none; margin-top: 2px; }
+  .units button { width: auto; background: transparent; color: var(--muted); font: 600 14px/1 inherit; padding: 8px 14px; border-radius: 999px; }
+  .units button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+  .suffix { flex: none !important; color: var(--muted); font-size: 14px; min-width: 64px; }
   .profwrap { position: relative; margin-top: 14px; touch-action: none; user-select: none; }
   .profwrap svg.profile { margin-top: 0; }
   .handle { position: absolute; top: 0; bottom: 0; width: 22px; margin-left: -11px; cursor: ew-resize; }
@@ -73,7 +78,13 @@
 </head>
 <body>
 <main>
-  <h1>Course to FIT</h1>
+  <div class="top">
+    <h1>Course to FIT</h1>
+    <div class="units" role="group" aria-label="Distance units">
+      <button type="button" data-unit="km" aria-pressed="true">km</button>
+      <button type="button" data-unit="mi" aria-pressed="false">miles</button>
+    </div>
+  </div>
   <p class="sub">Turn a saved course into a running activity file you can import into Garmin Connect. Everything runs in your browser; nothing is uploaded.</p>
 
   <section class="card">
@@ -130,7 +141,8 @@
         <label for="pace">Pace</label>
         <div class="row">
           <input type="text" id="pace" value="17:04" inputmode="numeric" placeholder="mm:ss">
-          <select id="unit"><option value="km">per km</option><option value="mi">per mile</option></select>
+          <span class="suffix" id="paceUnit">per km</span>
+          <input type="hidden" id="unit" value="km">
         </div>
         <p class="note" style="margin:6px 0 0">Use a slow pace. The default is 17:04/km (27:28/mile), which is a 12-hour marathon, with a matching walking cadence of 105 steps per minute. That pace won't set records or count as a hard effort. Change it above if you want something else.</p>
       </div>
@@ -514,6 +526,20 @@ ${pts}
 
   // Unit default: miles for US locales
   if ((navigator.language || '').toLowerCase() === 'en-us') { $('unit').value = 'mi'; $('pace').value = '27:28'; }
+
+  // km / miles toggle: switches every distance, elevation and the pace (keeping the same speed)
+  function showUnit() {
+    const u = $('unit').value;
+    document.querySelectorAll('.units button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.unit === u)));
+    $('paceUnit').textContent = u === 'mi' ? 'per mile' : 'per km';
+  }
+  document.querySelectorAll('.units button').forEach(b => b.addEventListener('click', () => {
+    if ($('unit').value === b.dataset.unit) return;
+    $('unit').value = b.dataset.unit;
+    $('unit').dispatchEvent(new Event('change'));
+    showUnit();
+  }));
+  showUnit();
 
   // File loading
   const drop = $('drop'), file = $('file');

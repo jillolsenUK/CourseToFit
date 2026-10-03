@@ -15,11 +15,12 @@ Please see the notes as to how will/may affect your metrics.
 
 2. Open `index.html` in Chrome, Edge, Safari or Firefox (double-click it). On Windows, unzip first rather than opening it from inside the ZIP.
 3. Choose a course file. To get one, open the course in Garmin Connect, click the gear icon and choose **Export GPX** (or TCX).
-4. Set the pace, start time and device, then click **Create FIT file**. In Chrome or Edge a Save window opens so you can choose the folder and file name. Safari and Firefox save to your Downloads folder instead, unless you turn on "Ask where to save" in the browser's download settings.
+4. Pick **km** or **miles** with the switch at the top right of the page. Every distance, elevation, split point and the pace change over straight away, and the pace is converted so the speed stays the same (17:04 per km becomes 27:28 per mile). US English browsers start in miles.
+5. Set the pace, start time and device, then click **Create FIT file**. In Chrome or Edge a Save window opens so you can choose the folder and file name. Safari and Firefox save to your Downloads folder instead, unless you turn on "Ask where to save" in the browser's download settings.
 
    ![The Course to FIT page with the Boston Marathon course loaded](docs/app.jpg)
 
-5. Import the file into Garmin Connect on the web (see below).
+6. Import the file into Garmin Connect on the web (see below).
 
 ## Splitting a course into segments
 
@@ -31,6 +32,10 @@ You can break a long course into several shorter ones, for example a marathon in
 4. Choose **Segment start times**: **One day apart** (part 1 on the start date, part 2 the next day, and so on) or **Back to back** (each part starts a minute after the previous one finishes).
 5. Choose **Save as**: **FIT activities** to import into Garmin Connect, or **GPX courses** if you just want the course cut into pieces.
 6. Click **Create … files**. In Chrome or Edge you pick a folder and all the parts are saved into it. Safari and Firefox download them one after another; allow multiple downloads if asked.
+
+![The Boston Marathon course split into four parts, with split lines on the elevation profile, sliders and a table of the parts](docs/split.jpg)
+
+The km / miles switch applies here too: the sliders, the table and the split points are shown in whichever unit you pick.
 
 Files are named like `Boston_part1of4_activity.fit`. Each part gets its own file ID, so Garmin won't reject later parts as duplicates. When parts are one day apart, the start date defaults far enough back that every part is in the past; if you choose a start that would put any part in the future, the page warns you.
 
