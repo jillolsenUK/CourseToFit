@@ -49,8 +49,8 @@
   ol.note { padding-left: 18px; margin: 0; }
   .hidden { display: none; }
   .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
-  .units { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--card); flex: none; margin-top: 2px; }
-  .units button { width: auto; background: transparent; color: var(--muted); font: 600 14px/1 inherit; padding: 8px 14px; border-radius: 999px; }
+  .units { display: inline-flex; flex: none !important; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--bg); }
+  .units button { width: auto; background: transparent; color: var(--muted); font: 600 13px/1 inherit; padding: 9px 12px; border-radius: 999px; white-space: nowrap; }
   .units button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
   .suffix { flex: none !important; color: var(--muted); font-size: 14px; min-width: 64px; }
   .profwrap { position: relative; margin-top: 14px; touch-action: none; user-select: none; }
@@ -60,8 +60,7 @@
   .handle span { position: absolute; left: 50%; top: -2px; transform: translateX(-50%); background: var(--ink); color: var(--card);
     font-size: 11px; font-weight: 600; line-height: 1; padding: 3px 5px; border-radius: 5px; white-space: nowrap; }
   .handle:hover::before, .handle.drag::before { opacity: 1; width: 3px; }
-  .split { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 14px; }
-  .splitrow { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: end; }
+    .splitrow { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: end; }
   button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); font-size: 14px; padding: 10px 12px; width: auto; white-space: nowrap; }
   button.ghost:disabled { opacity: .4; }
   .slider { display: grid; grid-template-columns: 64px 1fr 92px; gap: 10px; align-items: center; margin-top: 10px; font-size: 13px; }
@@ -78,13 +77,7 @@
 </head>
 <body>
 <main>
-  <div class="top">
-    <h1>Course to FIT</h1>
-    <div class="units" role="group" aria-label="Distance units">
-      <button type="button" data-unit="km" aria-pressed="true">km</button>
-      <button type="button" data-unit="mi" aria-pressed="false">miles</button>
-    </div>
-  </div>
+  <h1>Course to FIT</h1>
   <p class="sub">Turn a saved course into a running activity file you can import into Garmin Connect. Everything runs in your browser; nothing is uploaded.</p>
 
   <section class="card">
@@ -104,32 +97,6 @@
         <svg class="profile" id="profile" viewBox="0 0 700 110" preserveAspectRatio="none" aria-label="Elevation profile"></svg>
         <div id="handles"></div>
       </div>
-      <div class="split">
-        <div class="splitrow">
-          <div>
-            <label for="segN">Split into segments</label>
-            <input type="number" id="segN" value="1" min="1" max="20">
-          </div>
-          <div>
-            <label for="segGap">Segment start times</label>
-            <select id="segGap">
-              <option value="day">One day apart</option>
-              <option value="back">Back to back</option>
-            </select>
-          </div>
-          <div>
-            <label for="fmt">Save as</label>
-            <select id="fmt">
-              <option value="fit">FIT activities</option>
-              <option value="gpx">GPX courses</option>
-            </select>
-          </div>
-          <div class="evenbox"><button type="button" class="ghost" id="segEven">Space evenly</button></div>
-        </div>
-        <p class="note" id="splitHint" style="margin:8px 0 0">Choose how many parts you want. The split points start evenly spaced; drag the lines on the elevation profile or use the sliders to move them.</p>
-        <div id="segSliders"></div>
-        <div class="tablewrap"><table id="segTable"></table></div>
-      </div>
     </div>
     <div class="msg" id="loadMsg"></div>
   </section>
@@ -141,7 +108,10 @@
         <label for="pace">Pace</label>
         <div class="row">
           <input type="text" id="pace" value="17:04" inputmode="numeric" placeholder="mm:ss">
-          <span class="suffix" id="paceUnit">per km</span>
+          <div class="units" role="group" aria-label="Pace and distance units">
+            <button type="button" data-unit="km" aria-pressed="true">per km</button>
+            <button type="button" data-unit="mi" aria-pressed="false">per mile</button>
+          </div>
           <input type="hidden" id="unit" value="km">
         </div>
         <p class="note" style="margin:6px 0 0">Use a slow pace. The default is 17:04/km (27:28/mile), which is a 12-hour marathon, with a matching walking cadence of 105 steps per minute. That pace won't set records or count as a hard effort. Change it above if you want something else.</p>
@@ -169,6 +139,34 @@
       <div class="full"><label class="check"><input type="checkbox" id="cadOn" checked> Include cadence</label></div>
       <div id="cadBox"><label for="cad">Cadence (steps per minute)</label><input type="number" id="cad" value="105" min="60" max="220"></div>
     </div>
+  </section>
+
+  <section class="card hidden" id="splitCard">
+    <h2>Split into segments</h2>
+    <div class="splitrow">
+      <div>
+        <label for="segN">Number of segments</label>
+        <input type="number" id="segN" value="1" min="1" max="20">
+      </div>
+      <div>
+        <label for="segGap">Segment start times</label>
+        <select id="segGap">
+          <option value="day">One day apart</option>
+          <option value="back">Back to back</option>
+        </select>
+      </div>
+      <div>
+        <label for="fmt">Save as</label>
+        <select id="fmt">
+          <option value="fit">FIT activities</option>
+          <option value="gpx">GPX courses</option>
+        </select>
+      </div>
+      <div class="evenbox"><button type="button" class="ghost" id="segEven">Space evenly</button></div>
+    </div>
+    <p class="note" id="splitHint" style="margin:8px 0 0">Choose how many parts you want. The split points start evenly spaced; move them with the sliders, or drag the numbered lines on the elevation profile above.</p>
+    <div id="segSliders"></div>
+    <div class="tablewrap"><table id="segTable"></table></div>
   </section>
 
   <section class="card">
@@ -531,7 +529,6 @@ ${pts}
   function showUnit() {
     const u = $('unit').value;
     document.querySelectorAll('.units button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.unit === u)));
-    $('paceUnit').textContent = u === 'mi' ? 'per mile' : 'per km';
   }
   document.querySelectorAll('.units button').forEach(b => b.addEventListener('click', () => {
     if ($('unit').value === b.dataset.unit) return;
@@ -566,10 +563,10 @@ ${pts}
         course = CourseToFit.parseCourse(text);
         stats = CourseToFit.courseStats(course.points);
         msg($('loadMsg'), course.hasElevation ? '' : 'This course has no elevation data, so the activity will be flat.', course.hasElevation ? '' : 'warn');
-        $('summary').classList.remove('hidden');
+        $('summary').classList.remove('hidden'); $('splitCard').classList.remove('hidden');
         setSegments(+$('segN').value || 1);
       } catch (err) {
-        course = null; stats = null; $('summary').classList.add('hidden'); msg($('loadMsg'), err.message, 'err'); refresh();
+        course = null; stats = null; $('summary').classList.add('hidden'); $('splitCard').classList.add('hidden'); msg($('loadMsg'), err.message, 'err'); refresh();
       }
     });
   }
